@@ -69,7 +69,7 @@ public class StepVerifierTest {
                     .expectSubscription()
                     .expectNext(0)
                     .expectNextCount(498)
-                    .expectNext(499)
+                    .expectNext(500)
                     .expectComplete()
                     .verify();
         }

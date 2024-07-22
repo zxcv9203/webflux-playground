@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.test.StepVerifierOptions;
@@ -147,6 +148,36 @@ public class StepVerifierTest {
                     .expectNextCount(5)
                     .expectComplete()
                     .verify();
+        }
+    }
+
+    @Nested
+    class BackPressure {
+        public static Flux<Integer> generateNumber() {
+            return Flux.create(emitter -> {
+                for (int i = 1; i <= 100; i++) {
+                    emitter.next(i);
+                }
+                emitter.complete();
+            }, FluxSink.OverflowStrategy.ERROR);
+        }
+
+        @Test
+        @DisplayName("[실패] 오버플로우가 발생하여 실패")
+        void generateNumberTest() {
+            StepVerifier.create(generateNumber(), 1L)
+                    .thenConsumeWhile(num -> num >= 1)
+                    .verifyComplete();
+        }
+
+        @Test
+        @DisplayName("[성공] 에러 발생을 기대하고 Drop된 데이터가 있음을 검증")
+        void generateNumberTest2() {
+            StepVerifier.create(generateNumber(), 1L)
+                    .thenConsumeWhile(num -> num >= 1)
+                    .expectError()
+                    .verifyThenAssertThat()
+                    .hasDroppedElements();
         }
     }
 }

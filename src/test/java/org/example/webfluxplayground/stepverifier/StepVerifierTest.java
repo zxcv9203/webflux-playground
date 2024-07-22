@@ -3,6 +3,7 @@ package org.example.webfluxplayground.stepverifier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.Base64Utils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.time.Duration;
+import java.util.Base64;
 
 public class StepVerifierTest {
 
@@ -178,6 +180,31 @@ public class StepVerifierTest {
                     .expectError()
                     .verifyThenAssertThat()
                     .hasDroppedElements();
+        }
+    }
+
+    @Nested
+    class Context {
+        public static Mono<String> getSecretMessage(Mono<String> keySource) {
+            return keySource.zipWith(Mono.deferContextual(ctx -> Mono.just((String) ctx.get("secretKey"))))
+                    .filter(tp -> tp.getT1().equals(new String(Base64.getDecoder().decode(tp.getT2()))))
+                    .transformDeferredContextual((mono, ctx) -> mono.map(notUse -> ctx.get("secretMessage")));
+        }
+
+        @Test
+        void getSecretMessageTest() {
+            Mono<String> source = Mono.just("hello");
+
+            StepVerifier.create(getSecretMessage(source).contextWrite(context -> context.put("secretMessage", "Hello, Reactor"))
+                            .contextWrite(context -> context.put("secretKey", "aGVsbG8=")))
+                    .expectSubscription()
+                    .expectAccessibleContext()
+                    .hasKey("secretKey")
+                    .hasKey("secretMessage")
+                    .then()
+                    .expectNext("Hello, Reactor")
+                    .expectComplete()
+                    .verify();
         }
     }
 }

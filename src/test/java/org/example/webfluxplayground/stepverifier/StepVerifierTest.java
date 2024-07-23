@@ -3,7 +3,6 @@ package org.example.webfluxplayground.stepverifier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.Base64Utils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
@@ -14,7 +13,11 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public class StepVerifierTest {
 
@@ -203,6 +206,29 @@ public class StepVerifierTest {
                     .hasKey("secretMessage")
                     .then()
                     .expectNext("Hello, Reactor")
+                    .expectComplete()
+                    .verify();
+        }
+    }
+
+    @Nested
+    class Record {
+        public static Flux<String> getCapitalizedCountry(Flux<String> source) {
+            return source
+                    .map(country -> country.substring(0, 1).toUpperCase() + country.substring(1));
+        }
+
+        @Test
+        void getCityTest() {
+            StepVerifier.create(getCapitalizedCountry(Flux.just("korea", "england", "canada", "india")))
+                    .expectSubscription()
+                    .recordWith(ArrayList::new)
+                    .thenConsumeWhile(country -> !country.isEmpty())
+                    .consumeRecordedWith(countries -> {
+                        assertThat(countries.stream()
+                                        .allMatch(country -> Character.isUpperCase(country.charAt(0))),
+                                is(true));
+                    })
                     .expectComplete()
                     .verify();
         }

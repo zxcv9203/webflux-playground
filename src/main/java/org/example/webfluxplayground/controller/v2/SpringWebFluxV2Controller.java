@@ -19,26 +19,32 @@ public class SpringWebFluxV2Controller {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<String>> createUser(@RequestBody String user) {
-        users.add(user);
-        return Mono.just(new ResponseEntity<>("User created: " + user, HttpStatus.CREATED));
+    public Mono<ResponseEntity<String>> createUser(@RequestBody Mono<String> userMono) {
+        return userMono.flatMap(user -> {
+            users.add(user);
+            return Mono.just(new ResponseEntity<>("User created: " + user, HttpStatus.CREATED));
+        });
     }
 
     @PutMapping
-    public Mono<ResponseEntity<String>> updateUser(@RequestBody String user) {
-        if (users.contains(user)) {
-            return Mono.just(new ResponseEntity<>("User updated: " + user, HttpStatus.OK));
-        } else {
-            return Mono.just(new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND));
-        }
+    public Mono<ResponseEntity<String>> updateUser(@RequestBody Mono<String> userMono) {
+        return userMono.flatMap(user -> {
+            if (users.contains(user)) {
+                return Mono.just(new ResponseEntity<>("User updated: " + user, HttpStatus.OK));
+            } else {
+                return Mono.just(new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND));
+            }
+        });
     }
 
     @DeleteMapping
-    public Mono<ResponseEntity<String>> deleteUser(@RequestBody String user) {
-        if (users.remove(user)) {
-            return Mono.just(new ResponseEntity<>("User deleted: " + user, HttpStatus.NO_CONTENT));
-        } else {
-            return Mono.just(new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND));
-        }
+    public Mono<ResponseEntity<String>> deleteUser(@RequestBody Mono<String> userMono) {
+        return userMono.flatMap(user -> {
+            if (users.remove(user)) {
+                return Mono.just(new ResponseEntity<>("User deleted: " + user, HttpStatus.NO_CONTENT));
+            } else {
+                return Mono.just(new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND));
+            }
+        });
     }
 }

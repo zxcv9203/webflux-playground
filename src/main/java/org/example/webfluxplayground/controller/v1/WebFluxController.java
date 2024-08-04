@@ -1,4 +1,4 @@
-package org.example.webfluxplayground.controller;
+package org.example.webfluxplayground.controller.v1;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

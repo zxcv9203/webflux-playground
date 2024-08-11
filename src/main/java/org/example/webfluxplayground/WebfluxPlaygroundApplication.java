@@ -6,6 +6,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.r2dbc.config.EnableR2dbcAuditing;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 
 @SpringBootApplication
 @Slf4j
+@EnableR2dbcRepositories
+@EnableR2dbcAuditing
 public class WebfluxPlaygroundApplication {
 
     public static void main(String[] args) {

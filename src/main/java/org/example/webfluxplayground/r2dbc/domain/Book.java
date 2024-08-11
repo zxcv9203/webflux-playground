@@ -1,5 +1,6 @@
 package org.example.webfluxplayground.r2dbc.domain;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Setter
+@Getter
 public class Book {
     @Id
     private Long id;
